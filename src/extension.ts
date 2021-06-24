@@ -32,6 +32,7 @@ interface terraformLanguageClient {
 	commandPrefix: string,
 	client: LanguageClient
 }
+import { TFCloudView } from './tfCloudView';
 
 const clients: Map<string, terraformLanguageClient> = new Map();
 const shortUid = new ShortUniqueId();
@@ -59,6 +60,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
 			console.error(`Error trying to erase pre-2.0.0 settings: ${err.message}`);
 		}
 	}
+
+	// Create Terraform Cloud views
+	new TFCloudView(context);
 
 	// Subscriptions
 	context.subscriptions.push(
@@ -97,6 +101,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
 		}),
 		vscode.commands.registerCommand('terraform.initCurrent', async () => {
 			await terraformCommand('init');
+		}),
+		vscode.commands.registerCommand('terraform.login', async () => {
+			await terraformCommand('login', false);
 		}),
 		vscode.commands.registerCommand('terraform.plan', async () => {
 			await terraformCommand('plan', false);

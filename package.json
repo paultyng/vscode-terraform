@@ -32,9 +32,9 @@
   },
   "activationEvents": [
     "onLanguage:terraform",
-    "onView:terraform-modules",
     "workspaceContains:**/*.tf",
-    "onCommand:terraform.enableLanguageServer"
+    "onCommand:terraform.enableLanguageServer",
+    "onView:tfcRuns"
   ],
   "main": "./out/extension",
   "contributes": {
@@ -79,6 +79,33 @@
       {
         "language": "terraform",
         "path": "./snippets/terraform.json"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tfc",
+          "title": "Terraform Cloud",
+          "icon": "./terraform-color.svg"
+        }
+      ]
+    },
+    "views": {
+      "tfc": [
+        {
+          "id": "tfcRuns",
+          "name": "Runs"
+        },
+        {
+          "id": "tfcWorkspaces",
+          "name": "Workspaces"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "tfcRuns",
+        "contents": "Log in to Terraform to view your runs\n[Connect now](command:tfc.connect)"
       }
     ],
     "configuration": {
@@ -192,8 +219,37 @@
       {
         "command": "terraform.plan",
         "title": "Terraform: plan"
+      },
+      {
+        "command": "terraform.login",
+        "title": "Terraform: login"
+      },
+      {
+        "command": "tfc.connect",
+        "title": "Terraform Cloud: connect"
+      },
+      {
+        "command": "tfc.openLink",
+        "title": "Terraform Cloud: open"
+      },
+      {
+        "command": "tfc.refresh",
+        "title": "Terraform Cloud: refresh",
+        "icon": {
+          "light": "assets/light/refresh.svg",
+					"dark": "assets/dark/refresh.svg"
+        }
       }
-    ]
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "tfc.refresh",
+          "when": "view == tfcRuns || view == tfcWorkspaces",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
