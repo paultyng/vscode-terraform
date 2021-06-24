@@ -15,7 +15,7 @@ import * as path from 'path';
 import ShortUniqueId from 'short-unique-id';
 import TelemetryReporter from 'vscode-extension-telemetry';
 
-import { LanguageServerInstaller } from './languageServerInstaller';
+import { LanguageServerInstaller, isValidVersionString } from './languageServerInstaller';
 import {
 	config,
 	getFolderName,
@@ -36,6 +36,7 @@ interface terraformLanguageClient {
 const clients: Map<string, terraformLanguageClient> = new Map();
 const shortUid = new ShortUniqueId();
 const terraformStatus = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0);
+const defaultVersionString = "latest"
 
 // Telemetry config
 const extensionId = 'hashicorp.terraform';
@@ -57,6 +58,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<any> {
 			await config('terraform').update('languageServer', { enabled: undefined, external: true }, vscode.ConfigurationTarget.Global);
 		} catch (err) {
 			console.error(`Error trying to erase pre-2.0.0 settings: ${err.message}`);
+		}
+	}
+
+	if (config('terraform').has('languageServer.version')) {
+		const langServerVer = config('terraform').get('languageServer.version', defaultVersionString)
+		if (!isValidVersionString(langServerVer)) {
+			vscode.window.showWarningMessage(`The Terraform Language Server Version string '${langServerVer}' is not a valid semantic version and will be ignored.`);
 		}
 	}
 
@@ -182,7 +190,7 @@ async function updateLanguageServer() {
 	// skip install if a language server binary path is set
 	if (!config('terraform').get('languageServer.pathToBinary')) {
 		const installer = new LanguageServerInstaller(installPath, reporter);
-		const install = await installer.needsInstall();
+		const install = await installer.needsInstall(config('terraform').get('languageServer.version', defaultVersionString));
 		if (install) {
 			await stopClients();
 			try {
