@@ -16,6 +16,7 @@ import ShortUniqueId from 'short-unique-id';
 import TelemetryReporter from 'vscode-extension-telemetry';
 
 import { LanguageServerInstaller } from './languageServerInstaller';
+import { ShowReferencesFeature } from './showReferences';
 import {
 	config,
 	getFolderName,
@@ -237,6 +238,8 @@ async function startClients(folders = prunedFolderNames()) {
 function configureClient(binPath:string, folder: string) {
 	const commandPrefix = shortUid.seq();
 	const client = newClient(binPath, folder, commandPrefix);
+
+	client.registerFeature(new ShowReferencesFeature(client));
 
 	client.onDidChangeState((event) => {
 		if (event.newState === ClientState.Stopped) {
